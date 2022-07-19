@@ -1,0 +1,39 @@
+#	$OpenBSD: smtpd.conf,v 1.10 2018/05/24 11:40:17 gilles Exp $
+
+# This is the smtpd server system-wide configuration file.
+# See smtpd.conf(5) for more information.
+
+table aliases file:/etc/aliases
+
+pki {{ ansible_fqdn }} cert "{{ opensmtpd_ssl_cert }}"
+pki {{ ansible_fqdn }} key "{{ opensmtpd_ssl_key }}"
+
+filter check_dyndns phase connect match rdns regex { '.*\.dyn\..*', '.*\.dsl\..*' } \
+    disconnect "550. Rejected. Mail not accepted from residential connections."
+    
+filter check_rdns phase connect match !rdns \
+    disconnect "550. Rejected. No RDNS provided. Too old-school to be worth accepting."
+
+filter check_fcrdns phase connect match !fcrdns \
+    disconnect "550. Rejected. No FCrDNS provided. Too old-school to be worth accepting."
+    
+filter senderscore \
+    proc-exec "filter-senderscore -blockBelow 10 -junkBelow 70 -slowFactor 5000 -scoreHeader"
+    
+filter rspamd proc-exec "filter-rspamd"
+
+listen on 0.0.0.0 tls pki {{ ansible_fqdn }} filter { check_dyndns, check_rdns, check_fcrdns, rspamd, senderscore }
+listen on 0.0.0.0 port submission tls-require pki {{ ansible_fqdn }} auth filter rspamd
+
+action "local" maildir alias <aliases>
+action "relay" relay helo {{ ansible_fqdn }}
+
+match from any for domain "{{ ansible_fqdn }}" action "local"
+{% for domain in alt_domains %}
+match from any for domain "{{ domain }}" action "local"
+{% endfor %}
+
+match for local action "local"
+match from local for any action "relay"
+match from any auth for any action "relay"
+

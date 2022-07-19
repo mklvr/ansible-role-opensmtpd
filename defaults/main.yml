@@ -1,0 +1,4 @@
+---
+# defaults file for opensmtpd
+opensmtpd_ssl_cert: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
+opensmtpd_ssl_key: "{{ openssl_private_key['filename'] }}"

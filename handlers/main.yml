@@ -1,0 +1,3 @@
+---
+- name: reload_smtpd
+  ansible.builtin.service: name=opensmtpd state=restarted enabled=True
