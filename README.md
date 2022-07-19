@@ -11,11 +11,11 @@ Nothing special.
 Role Variables
 --------------
 
-opensmtpd_ssl_cert: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
-opensmtpd_ssl_key: "{{ openssl_private_key['filename'] }}"
-alt_domains:
-  - domain1.com
-  - domain2.com
+    opensmtpd_ssl_cert: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
+    opensmtpd_ssl_key: "{{ openssl_private_key['filename'] }}"
+    alt_domains:
+      - domain1.com
+      - domain2.com
 
 Dependencies
 ------------
